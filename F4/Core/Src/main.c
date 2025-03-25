@@ -35,6 +35,7 @@
 #define RETARDO1 50
 #define RETARDO2 100
 #define RETARDO3 300
+#define DELAY 50
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,7 +71,33 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void print_number(int num) {
+    char buffer[6];  // Espacio para hasta 5 dígitos más el carácter nulo '\0'
+    int index = 0;
+    // Extraer los dígitos de num y almacenarlos en buffer en orden inverso
+    do {
+        buffer[index++] = (num % 10) + '0';  // Extraemos el último dígito y lo convertimos a carácter
+        num = num / 10;  // Eliminamos el último dígito dividiendo entre 10
+    } while (num > 0);  // Continuamos hasta que el número se reduzca a 0
 
+    // Invertir el orden de los dígitos en buffer para obtener el número correcto
+    for (int i = 0, j = index - 1; i < j; i++, j--) {
+        char temp = buffer[i];
+        buffer[i] = buffer[j];
+        buffer[j] = temp;
+    }
+    buffer[index] = '\0';  // Agregar el carácter nulo para finalizar la cadena
+
+    // Enviar el número por UART
+    HAL_UART_Transmit(&huart3, (uint8_t*)buffer, index, HAL_MAX_DELAY);
+
+    // Enviar nueva línea
+    HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2, HAL_MAX_DELAY);
+}
+void simple_uart_test() {
+	const char msg[] = "Hello, UART!\r\n";
+    HAL_UART_Transmit(&huart3, (uint8_t*)msg, sizeof(msg) - 1, HAL_MAX_DELAY);
+    }
 /* USER CODE END 0 */
 
 /**
@@ -106,7 +133,20 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  int contador = 0;
+  int button_pressed = 0;
+  uint8_t B1[]=" Botón presionado 1 veces \n\r";
+  uint8_t B2[]=" Botón presionado 2 veces \n\r";
+  uint8_t B3[]=" Botón presionado 3 veces \n\r";
+  uint8_t B4[]=" Botón presionado 4 veces \n\r";
+  uint8_t B5[]=" Botón presionado 5 veces \n\r";
+  uint8_t B6[]=" Botón presionado 6 veces \n\r";
+  uint8_t L1[]=" LED1 encendido \n\r";
+  uint8_t L2[]=" LED2 encendido \n\r";
+  uint8_t L3[]=" LED3 encendido \n\r";
+  uint8_t L1o[]=" LED1 apagado \n\r";
+  uint8_t L2o[]=" LED2 apagado \n\r";
+  uint8_t L3o[]=" LED3 apagado \n\r";
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -115,19 +155,46 @@ int main(void)
 
   while (1)
   {
-	  HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_SET);
-	  HAL_Delay(RETARDO1);
-	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_SET);
-	  HAL_Delay(RETARDO2);
-	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_SET);
-	  HAL_Delay(RETARDO3);
-	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_RESET);
-	  HAL_Delay(RETARDO3);
-	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);
-	  HAL_Delay(RETARDO2);
-	  HAL_GPIO_WritePin(GPIOB, LD1_Pin, GPIO_PIN_RESET);
-	  HAL_Delay(RETARDO1);
+	  simple_uart_test();
+	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET) {
+          if (!button_pressed) {
+              contador++;
+              if (contador > 2) {
+                  contador = 0;
+              }
+              button_pressed = 2;
+          }
+      } else {
+          button_pressed = 0;
 
+      }
+      if (contador == 0) {
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);  // LED Verde ON
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_1, GPIO_PIN_RESET);
+          HAL_Delay(DELAY);
+          print_number(contador);
+          HAL_UART_Transmit(&huart3, B1, strlen(B1), HAL_MAX_DELAY);
+          HAL_UART_Transmit(&huart3, L1, strlen(L1), HAL_MAX_DELAY);
+      }
+      else if (contador == 1) {
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_SET);  // LED Naranja ON
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_1, GPIO_PIN_RESET);
+
+          HAL_Delay(DELAY);
+          print_number(contador);
+          HAL_UART_Transmit(&huart3, B2, strlen(B2), HAL_MAX_DELAY);
+          HAL_UART_Transmit(&huart3, L2, strlen(L2), HAL_MAX_DELAY);
+      }
+      else if (contador == 2) {
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_1, GPIO_PIN_SET);  // LED Rojo ON
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);
+          HAL_Delay(DELAY);
+          print_number(contador);
+
+      }
 
 
     /* USER CODE END WHILE */
