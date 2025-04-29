@@ -48,6 +48,7 @@ I2S_HandleTypeDef hi2s3;
 SPI_HandleTypeDef hspi1;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 
@@ -60,6 +61,7 @@ static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
@@ -131,6 +133,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USB_HOST_Init();
   MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   int contador = 0;
   int button_pressed = 0;
@@ -143,7 +146,7 @@ int main(void)
   uint8_t L1[]=" LED1 encendido \n\r";
   uint8_t L2[]=" LED2 encendido \n\r";
   uint8_t L3[]=" LED3 encendido \n\r";
-  uint8_t L1o[]=" LED1 apagado \n\r";
+  uint8_t L4[]=" LED4 encendido \n\r";
   uint8_t L2o[]=" LED2 apagado \n\r";
   uint8_t L3o[]=" LED3 apagado \n\r";
   /* USER CODE END 2 */
@@ -152,7 +155,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  simple_uart_test();
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {
           if (!button_pressed) {
               contador++;
@@ -192,6 +194,8 @@ int main(void)
           HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
           HAL_Delay(DELAY);
           print_number(contador);
+          HAL_UART_Transmit(&huart2, B3, strlen(B3), HAL_MAX_DELAY);
+          HAL_UART_Transmit(&huart2, L3, strlen(L3), HAL_MAX_DELAY);
 
       }
       else if (contador == 3) {
@@ -201,6 +205,8 @@ int main(void)
           HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
           HAL_Delay(DELAY);
           print_number(contador);
+          HAL_UART_Transmit(&huart2, B4, strlen(B4), HAL_MAX_DELAY);
+          HAL_UART_Transmit(&huart2, L4, strlen(L4), HAL_MAX_DELAY);
 
       }
 
@@ -380,7 +386,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -394,6 +400,39 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
